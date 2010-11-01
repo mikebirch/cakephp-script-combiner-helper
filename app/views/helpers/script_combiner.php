@@ -316,6 +316,13 @@ class ScriptCombinerHelper extends Helper {
  * @todo Implement reliable Javascript compression without use of a 3rd party.
  */
 	private function compressJs($jsData) {
-		return $jsData;
+		if (!class_exists('JSMin')) {
+			App::import('Vendor', 'JSMin', array('file' => 'jsmin.php'));
+		}
+		if (!class_exists('JSMin')) {
+			trigger_error('JavaScript not compressed -- cannot locate JSMin class.', E_USER_WARNING);
+			return $jsData;
+		}
+		return JSMin::minify($jsData);
 	}
 }
