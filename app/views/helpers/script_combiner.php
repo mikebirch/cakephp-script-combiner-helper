@@ -12,7 +12,6 @@ if (is_file(CONFIGS . 'script_combiner.php')) {
 
 /**
  * @property HtmlHelper $Html
- * @property JavascriptHelper $Javascript
  */
 class ScriptCombinerHelper extends Helper {
 /**
@@ -20,7 +19,7 @@ class ScriptCombinerHelper extends Helper {
  * @access public
  * @var array
  */
-	public $helpers = array('Html', 'Javascript');
+	public $helpers = array('Html');
 /**
  * The directory to which the combined CSS files will be cached.
  * @access private
@@ -82,7 +81,10 @@ class ScriptCombinerHelper extends Helper {
 			$this->cacheLength = (int)$cacheLength;
 		}
 		
-		$this->enabled = true;
+		// disabled for development
+        	if (Configure::read('debug') == 0) {
+			$this->enabled = true;
+		}  
 	}
 /**
  * <p>Receives numerous CSS files, and combines all the supplied CSS files into one
@@ -189,7 +191,7 @@ class ScriptCombinerHelper extends Helper {
 		// If the helper hasn't been set up correctly, then there's no point in
 		// combining scripts. We'll pass it off to the parent to handle.
 		if (!$this->enabled) {
-			return $this->Javascript->link($jsFiles);
+			return $this->Html->script($jsFiles);
 		}
 
 		// Let's make sure we have the array of files correct. And we'll generate
@@ -205,11 +207,11 @@ class ScriptCombinerHelper extends Helper {
 		// If we can determine that the current cache file is still valid, then
 		// we can just return the URL to that file.
 		if ($this->isCacheFileValid($cacheFile)) {
-			return $this->Javascript->link($this->convertToUrl($cacheFile));
+			return $this->Html->script($this->convertToUrl($cacheFile));
 		}
 
 		$jsData = array();
-		$jsLinks = $this->Javascript->link($jsFiles);
+		$jsLinks = $this->Html->script($jsFiles);
 		preg_match_all('/src="([^"]+)"/i', $jsLinks, $urlMatches);
 		if (isset($urlMatches[1])) {
 			$urlMatches = array_unique($urlMatches[1]);
@@ -227,21 +229,16 @@ class ScriptCombinerHelper extends Helper {
 		// Let's combine them.
 		$jsData = implode(Configure::read('ScriptCombiner.fileSeparator'), $jsData);
 
-		// Let's check whether we need to compress the Javascript. If so, we'll
-		// compress it before saving it.
-		if (Configure::read('ScriptCombiner.compressJs')) {
-			$jsData = $this->compressJs($jsData);
-		}
 
 		// If we can cache the file, then we can return the URL to the file.
 		if (file_put_contents($cacheFile, $jsData) > 0) {
-			return $this->Javascript->link($this->convertToUrl($cacheFile));
+			return $this->Html->script($this->convertToUrl($cacheFile));
 		}
 
 		// Otherwise, we'll have to trigger an error, and pass the handling of the
 		// CSS files to the HTML Helper.
 		trigger_error("Cannot combine Javascript files to {$cacheFile}. Please ensure this directory is writable.", E_USER_WARNING);
-		return $this->Javascript->link($jsFiles);
+		return $this->Html->script($jsFiles);
 	}
 /**
  * Indicates whether the supplied cached file's cache life has expired or not.
@@ -307,22 +304,5 @@ class ScriptCombinerHelper extends Helper {
 
 		return $cssData;
 	}
-/**
- * Compresses the supplied Javascript data, removing extra whitespaces, as well
- * as any comments found.
- * @access private
- * @param string $jsData The Javascript data to be compressed.
- * @return string The compressed Javascript data.
- * @todo Implement reliable Javascript compression without use of a 3rd party.
- */
-	private function compressJs($jsData) {
-		if (!class_exists('JSMin')) {
-			App::import('Vendor', 'JSMin', array('file' => 'jsmin.php'));
-		}
-		if (!class_exists('JSMin')) {
-			trigger_error('JavaScript not compressed -- cannot locate JSMin class.', E_USER_WARNING);
-			return $jsData;
-		}
-		return JSMin::minify($jsData);
-	}
+
 }
