@@ -1,9 +1,9 @@
 <?php
 App::uses('AppHelper', 'View/Helper');
 /**
- * The helper definition for the Script Combiner helper.
- * @author Geoffrey Garbers
- * @version 0.1
+ * Combine and compress CSS files and combine JavaScript files
+ * Forked from https://github.com/garbetjie/cakephp-script-combiner-helper
+ * by Geoffrey Garbers, http://garbers.co.za/sandbox/cakephp-javascript-css-minifier/
  */
 
 Configure::load('script_combiner');
