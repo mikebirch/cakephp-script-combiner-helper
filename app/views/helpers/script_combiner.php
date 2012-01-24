@@ -1,19 +1,17 @@
 <?php
+App::uses('AppHelper', 'View/Helper');
 /**
  * The helper definition for the Script Combiner helper.
  * @author Geoffrey Garbers
  * @version 0.1
  */
 
-// Include the stand-alone configuration file if it exists.
-if (is_file(CONFIGS . 'script_combiner.php')) {
-	Configure::load('script_combiner');
-}
+Configure::load('script_combiner');
 
 /**
  * @property HtmlHelper $Html
  */
-class ScriptCombinerHelper extends Helper {
+class ScriptCombinerHelper extends AppHelper {
 /**
  * Array containing additional helpers to be used in this helper.
  * @access public
@@ -179,9 +177,7 @@ class ScriptCombinerHelper extends Helper {
  * @param mixed [$url1,$url2,...] Either an array of files to combine, or multiple arguments of filenames.
  * @return string The HTML &lt;script /&gt; to either the combined file, or to the multiple Javascript files if the combined file could not be cached.
  */
-	public function js() {
-		// Get the javascript files.
-		$jsFiles = func_get_args();
+	public function js($jsFiles) {
 
 		// Whoops. No files! We'll have to return an empty string then.
 		if (empty($jsFiles)) {
